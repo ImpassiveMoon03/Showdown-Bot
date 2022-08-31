@@ -1,7 +1,7 @@
 import asyncio
 from poke_env import PlayerConfiguration
 from poke_env.player import RandomPlayer, Player
-from poke_env import ServerConfiguration, environment
+from poke_env import ServerConfiguration, environment, ShowdownServerConfiguration
 import time
 import ty
 import random
@@ -72,6 +72,8 @@ my_server_config= ServerConfiguration(
     "http://vibe.impassivedev.com.psim.us/action.php?"
 )
 
+# my_server_config = ShowdownServerConfiguration
+
 # You can now use my_server_config with a Player object
 
 class Mimic(Player):
@@ -100,10 +102,9 @@ class Mimic(Player):
 
         if battle.available_moves:
             best_moves = []
+            b = ""
             for i in battle.available_moves:
-                print("XXXX")
-                print(i)
-                print("XXXX")
+                b+=F"{i} "
                 ttype = str(i.type).split(" ")[0].lower()
                 if len(www) != 0:
                     if ttype in www and i.base_power != 0:
@@ -112,34 +113,64 @@ class Mimic(Player):
                     if ttype in ww and i.base_power != 0:
                         best_moves.append(i)
             
+            print("Known Moves:")
+            print(b)
+            print("")
+            print("Best Possible Moves:")
+            print(best_moves)
+            print("")
+            
             if len(best_moves) == 0:
                 for i in battle.available_moves:
                     active = battle.active_pokemon
                     if str(active.type_1).split(" ")[0].lower() not in rr:
                         if i.base_power != 0 and str(i.type).split(" ")[0].lower() == str(active.type_1).split(" ")[0].lower():
+                            print("Move Selected:")
+                            print(i)
+                            print("")
                             return self.create_order(i)
+                        else:
+                            best_move = max(battle.available_moves, key=lambda move: move.base_power)
+                            print("Move Selected:")
+                            print(best_move)
+                            print("")
+                            return self.create_order(best_move)
                     elif i.base_power != 0 and str(i.type).split(" ")[0].lower() not in rr:
+                        print("Move Selected:")
+                        print(i)
+                        print("")
                         return self.create_order(i)
-            if len(best_moves) == 1:
+                    else:
+                        best_move = max(battle.available_moves, key=lambda move: move.base_power)
+                        print("Move Selected:")
+                        print(best_move)
+                        print("")
+                        return self.create_order(best_move)
+            elif len(best_moves) == 1:
+                print("Move Selected:")
+                print(best_moves[0])
+                print("")
                 return self.create_order(best_moves[0])
-            elif len(best_moves) > 1:
-                return self.create_order(random.choice(best_moves))
-        else:
-            return self.choose_random_move(battle)
+            else:
+                i = random.choice(best_moves)
+                print("Move Selected:")
+                print(i)
+                print("")
+                return self.create_order(i)
+        return self.choose_random_move(battle)
 
         
 
 
 async def main():
     player = Mimic(
-        player_configuration=PlayerConfiguration("XXXXXX", "XXXXXX"),
+        player_configuration=PlayerConfiguration("XXXXX", "XXXXX"),
         server_configuration=my_server_config, 
-        battle_format='gen7ou',
-        team=team
+        battle_format='gen8randombattle',
     )
 
     # Accepting one challenge from any user
-    await player.accept_challenges(None, 2)
+    await player.accept_challenges(None, 1000000)
 
 
 
